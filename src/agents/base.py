@@ -1,6 +1,9 @@
 import numpy as np
 import torch
+import logging
 from torch.utils.data import DataLoader
+import logging
+import os
 
 from src.utils import utils
 
@@ -8,7 +11,8 @@ from src.utils import utils
 class BaseAgent(object):
     def __init__(self, config):
         self.config = config
-        # self.logger = logging.getLogger("Agent")
+        self.logger = logging.getLogger("Agent")
+        self.log_path = os.path.join(config.log_dir, "log.txt")
 
         self._set_seed()  # set seed as early as possible
 
@@ -79,7 +83,7 @@ class BaseAgent(object):
 
     def _create_dataloader(self, dataset, batch_size, shuffle=True):
         dataset_size = len(dataset)
-        loader = DataLoader(dataset, batch_size=batch_size, 
+        loader = DataLoader(dataset, batch_size=batch_size,
                             shuffle=shuffle, pin_memory=True,
                             num_workers=self.config.data_loader_workers)
 
@@ -109,12 +113,20 @@ class BaseAgent(object):
             self.backup()
             raise e
 
+    def write_to_file(self, text):
+        assert text != None
+        f = open(self.log_path, "a")
+        f.write(str(text) + "\n")
+        f.close()
+        print(f"writing (acc or epoch) to file: {self.log_path}")
+
     def train(self):
         """
         Main training loop
         :return:
         """
         for epoch in range(self.current_epoch, self.config.num_epochs):
+            print(f"Epoch: {epoch}")
             self.current_epoch = epoch
             self.train_one_epoch()
             if (self.config.validate and
