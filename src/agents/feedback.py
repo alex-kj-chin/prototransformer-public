@@ -1445,7 +1445,6 @@ class TextPrototypeNetAgent(BaseAgent):
             roberta_device = 'cpu'
         else:
             roberta_device = f'cuda:{self.config.gpu_device}'
-        print(self.config.dataset.answers_path)
 
         self.train_dataset = MetaDTSolutions(
             data_root=self.config.dataset.data_root,
@@ -1470,6 +1469,7 @@ class TextPrototypeNetAgent(BaseAgent):
             answers_path=self.config.dataset.answers_path,
             cache_path=self.config.dataset.cache_path,
             simple_binary=self.config.train.simple_binary,
+            keep_all_in_train=self.config.dataset.train.keep_all_in_train,
         )
         self.test_dataset = MetaDTSolutions(
             data_root=self.config.dataset.data_root,
@@ -1494,6 +1494,7 @@ class TextPrototypeNetAgent(BaseAgent):
             answers_path=self.config.dataset.answers_path,
             cache_path=self.config.dataset.cache_path,
             simple_binary=self.config.train.simple_binary,
+            larger_sample=self.config.dataset.larger_sample,
         )
 
     def _load_loaders(self):
@@ -1969,6 +1970,7 @@ class TextPrototypeNetAgent(BaseAgent):
 
     def eval_split(self, name, loader):
         tqdm_batch = tqdm(total=len(loader), desc=f"[{name}]")
+        print("LENGTH OF THE LOADER IS:", len(loader))
         self.model.eval()
         loss_meter = utils.AverageMeter()
         all_task_types = list(set(self.test_dataset.task_types))
@@ -1977,6 +1979,7 @@ class TextPrototypeNetAgent(BaseAgent):
 
         with torch.no_grad():
             for batch in loader:
+
                 n_shots = self.config.dataset.train.n_shots
                 n_queries = self.config.dataset.test.n_queries
                 loss, acc, _ = self.forward(batch, n_shots, n_queries)

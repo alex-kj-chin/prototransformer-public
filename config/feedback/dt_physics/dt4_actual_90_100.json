@@ -8,8 +8,8 @@
     "data_loader_workers": 4,
     "dataset": {
         "data_root": "./config/feedback/dt_physics/data_root/data/",
-        "rubric_path": "rubric.csv",
-        "answers_path": "answers.csv",
+        "rubric_path": "rubric_4.csv",
+        "answers_path": "answers_4.csv",
         "cache_path": "cache",
         "train": {
             "augment_by_names": false,
@@ -19,6 +19,7 @@
             "n_shots": 5,
             "conservative": true,
             "simple_binary": false,
+            "keep_all_in_train": true,
 	    "smlmt_tasks_factor": 0.1
         },
         "test": {

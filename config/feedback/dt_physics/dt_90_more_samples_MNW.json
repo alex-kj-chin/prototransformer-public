@@ -11,6 +11,7 @@
         "rubric_path": "rubric.csv",
         "answers_path": "answers.csv",
         "cache_path": "cache",
+        "larger_sample": 0,
         "train": {
             "augment_by_names": false,
             "augment_by_rubric": true,
@@ -22,7 +23,8 @@
 	    "smlmt_tasks_factor": 0.1
         },
         "test": {
-            "n_queries": 5
+            "n_queries": 5,
+            "real_acc": true
         },
         "train_frac": 0.9,
         "hold_out_split": true,

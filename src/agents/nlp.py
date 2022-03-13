@@ -84,6 +84,7 @@ class BaseNLPMetaAgent(BaseAgent):
                 'fs_fewrel': FewShotFewRel,
             }
             DatasetClass = class_dict[self.config.dataset.name]
+            print("IN _load_datasets, ABOUT TO INITIALIZE DATASET")
             self.train_dataset = DatasetClass(
                 data_root=self.config.dataset.data_root,
                 n_ways=self.config.dataset.train.n_ways,
@@ -186,11 +187,11 @@ class BaseNLPMetaAgent(BaseAgent):
         raise NotImplementedError
 
     def train(self):
+
         for epoch in range(self.current_epoch, self.config.optim.num_epochs):
             print(f"Epoch: {epoch}")
             self.current_epoch = epoch
-            self.write_to_file(epoch)
-            self.write_to_file(self.train_one_epoch())
+            self.write_to_file(str(epoch) + self.train_one_epoch())
 
             if (self.config.validate and epoch % self.config.validate_freq == 0):
                 self.write_to_file(self.eval_test())
@@ -200,6 +201,13 @@ class BaseNLPMetaAgent(BaseAgent):
             if self.iter_with_no_improv > self.config.optim.patience:
                 self.logger.info("Exceeded patience. Stop training...")
                 break
+
+            # Decay the shot
+            if self.shot_mode == "step_decay":
+                if epoch % self.config.dataset.train.decay_every == self.config.dataset.train.decay_every - 1:
+                    self.config.dataset.train.n_shots -= self.config.dataset.train.decay_by
+                    self.train_dataset.update_n_shots(self.config.dataset.train.n_shots)
+                    self.test_dataset.update_n_shots(self.config.dataset.train.n_shots)
 
     def save_metrics(self):
         out_dict = {
