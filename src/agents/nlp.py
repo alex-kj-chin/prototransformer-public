@@ -84,7 +84,6 @@ class BaseNLPMetaAgent(BaseAgent):
                 'fs_fewrel': FewShotFewRel,
             }
             DatasetClass = class_dict[self.config.dataset.name]
-            print("IN _load_datasets, ABOUT TO INITIALIZE DATASET")
             self.train_dataset = DatasetClass(
                 data_root=self.config.dataset.data_root,
                 n_ways=self.config.dataset.train.n_ways,
@@ -209,7 +208,6 @@ class BaseNLPMetaAgent(BaseAgent):
                     self.config.dataset.train.n_shots -= self.config.dataset.train.decay_by
                     print("new value is ", self.config.dataset.train.n_shots)
                     self.train_dataset.update_n_shots(self.config.dataset.train.n_shots)
-                    self.test_dataset.update_n_shots(self.config.dataset.train.n_shots)
 
     def save_metrics(self):
         out_dict = {
@@ -411,6 +409,8 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         with torch.no_grad():
             for batch in loader:
                 n_shots = self.config.dataset.train.n_shots
+                if self.shot_mode == "step_decay":
+                    n_shots = self.config.dataset.test.n_shots
                 n_queries = self.config.dataset.test.n_queries
                 loss, acc, _ = self.forward(batch, n_shots, n_queries)
                 task_type = batch['task_type'].cpu().numpy()
