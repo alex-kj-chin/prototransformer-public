@@ -1,6 +1,6 @@
 {
     "exp_base": "./config/nlp/text/exp_dir/<DATE>",
-    "exp_name": "20news_sd_3_1_base",
+    "exp_name": "20news_sd_3_1_decay",
     "agent": "NLPPrototypeNetAgent",
     "cuda": true,
     "gpu_device": 8,
@@ -11,9 +11,12 @@
         "data_root": "./config/nlp/text/data_root/data/20news.json",
         "train": {
             "n_ways": 5,
-            "n_shots": 3,
+            "n_shots": 15,
             "n_queries": 3,
-            "smlmt_tasks_factor": 0
+            "smlmt_tasks_factor": 0,
+            "shot_mode": "step_decay",
+            "decay_every": 40,
+            "decay_by": 3
         },
         "test": {
             "n_ways": 5,

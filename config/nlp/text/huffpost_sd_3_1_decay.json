@@ -1,19 +1,22 @@
 {
     "exp_base": "./config/nlp/text/exp_dir/<DATE>",
-    "exp_name": "20news_sd_3_1_base",
+    "exp_name": "huffpost_sd_3_1_decay",
     "agent": "NLPPrototypeNetAgent",
     "cuda": true,
     "gpu_device": 8,
     "seed": 42,
     "data_loader_workers": 4,
     "dataset": {
-        "name": "fs_20news",
-        "data_root": "./config/nlp/text/data_root/data/20news.json",
+        "name": "fs_huffpost",
+        "data_root": "config/nlp/text/data_root/data/huffpost.json",
         "train": {
             "n_ways": 5,
-            "n_shots": 3,
+            "n_shots": 12,
             "n_queries": 3,
-            "smlmt_tasks_factor": 0
+            "smlmt_tasks_factor": 0,
+            "shot_mode": "step_decay",
+            "decay_every": 1,
+            "decay_by": 3
         },
         "test": {
             "n_ways": 5,
