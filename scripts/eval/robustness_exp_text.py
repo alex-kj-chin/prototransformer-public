@@ -54,13 +54,13 @@ def evaluate(args, gpu_device=-1):
         test_dataset,
         config.optim.batch_size,
     )
-    _, acc_means, acc_stdevs = agent.eval_split('Test', test_loader)
-    print(acc_means)
+    _, accuracies, acc_stdevs = agent.eval_split('Test', test_loader, verbose=True)
     print(acc_stdevs)
+    print(accuracies)
 
     checkpoint_name = args.checkpoint_file.replace('.pth.tar', '')
-    out_file = os.path.join(analysis_dir, f'{checkpoint_name}_eval.npz')
-    np.savez(out_file, mean_acc=acc_means, stdev_acc=acc_stdevs)
+    accuracy_fpath = os.path.join(analysis_dir, f'{checkpoint_name}_accuracies.csv')
+    np.savez(accuracy_fpath, accuracies=accuracies)
 
 
 if __name__ == "__main__":
