@@ -14,6 +14,7 @@ class BaseAgent(object):
         self.logger = logging.getLogger("Agent")
         self.log_path = os.path.join(config.log_dir, "log.txt")
         self.shot_mode = self.config.dataset.train.shot_mode if isinstance(self.config.dataset.train.shot_mode, str) else None
+        self.wi_mode = self.config.dataset.train.ways_mode if isinstance(self.config.dataset.train.ways_mode, str) else None
 
         self._set_seed()  # set seed as early as possible
 
@@ -33,6 +34,12 @@ class BaseAgent(object):
         self.current_val_metric = 0
         self.best_val_metric = 0
         self.iter_with_no_improv = 0
+        # These are or WI patience
+        self.best_val_metric_since_wi = 0
+        self.iter_with_no_improv_since_wi = 0
+        # These are for SD patience
+        self.best_val_metric_since_sd = 0
+        self.iter_with_no_improv_since_sd = 0
 
     def _set_seed(self):
         torch.manual_seed(self.config.seed)
