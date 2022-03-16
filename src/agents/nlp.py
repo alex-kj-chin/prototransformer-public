@@ -39,7 +39,9 @@ class BaseNLPMetaAgent(BaseAgent):
         self.test_acc = []
         self.test_acc_stdevs = []
         self.temp = []
-        if self.config.dataset.train.pdo_method == "downsample":
+        print("config pdo method: ", self.config.dataset.train.pdo_method)
+        print("PDO METHOD IS: ", self.pdo_method)
+        if self.pdo_method == "downsample":
             def sampling_method(difficulty_matrix, categories):
                 miss_prob = 0
                 for idx, first_category in categories:
@@ -117,7 +119,9 @@ class BaseNLPMetaAgent(BaseAgent):
             raise Exception(f'Dataset {self.config.dataset.name} not supported.')
 
         # For PDO
+        self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
         self.difficulty_matrix = np.ones((len(self.train_dataset.classes), len(self.train_dataset.classes))) * 0.5
+        self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
     def _load_loaders(self):
         self.train_loader, self.train_len = self._create_dataloader(
