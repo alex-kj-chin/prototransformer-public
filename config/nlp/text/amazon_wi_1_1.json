@@ -10,7 +10,7 @@
         "name": "fs_amazon",
         "data_root": "./config/nlp/text/data_root/data/amazon.json",
         "train": {
-            "n_ways": 2,
+            "n_ways": 5,
             "n_shots": 3,
             "n_queries": 3,
             "smlmt_tasks_factor": 0,
