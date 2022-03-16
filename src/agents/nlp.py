@@ -39,6 +39,20 @@ class BaseNLPMetaAgent(BaseAgent):
         self.test_acc = []
         self.test_acc_stdevs = []
         self.temp = []
+        if self.config.dataset.train.pdo_method == "downsample":
+            def sampling_method(difficulty_matrix, categories):
+                miss_prob = 0
+                for idx, first_category in categories:
+                    single_miss_prob = 0
+                    for second_category in categories:
+                        if first_category != second_category:
+                            single_miss_prob += (1 - single_miss_prob) * difficulty_matrix[first_category][second_category]
+                    miss_prob += single_miss_prob
+                return np.random.uniform < (miss_prob / len(categories))
+
+            self.sampling_method = sampling_method
+        else:
+            self.sampling_method = None
 
     def _load_datasets(self):
         if self.config.dataset.name == 'newsgroup':
@@ -101,6 +115,9 @@ class BaseNLPMetaAgent(BaseAgent):
             )
         else:
             raise Exception(f'Dataset {self.config.dataset.name} not supported.')
+
+        # For PDO
+        self.difficulty_matrix = np.ones((len(self.train_dataset.classes), len(self.train_dataset.classes))) * 0.5
 
     def _load_loaders(self):
         self.train_loader, self.train_len = self._create_dataloader(
@@ -206,11 +223,6 @@ class BaseNLPMetaAgent(BaseAgent):
                 break
 
             # increase the number of ways on a patience-based system
-            print(f"self.wi_mode; {self.wi_mode}")
-            print(f"self.iter_with_no_improv_since_wi: {self.iter_with_no_improv_since_wi}")
-            print(f"self.config.dataset.train.ways_patience: {self.config.dataset.train.ways_patience}")
-            print(f"self.config.dataset.train.n_ways: {self.config.dataset.train.n_ways}")
-            print(f"self.config.dataset.train.max_ways: {self.config.dataset.train.max_ways}")
             if self.wi_mode == "patience":
                 if self.iter_with_no_improv_since_wi > self.config.dataset.train.ways_patience:
                     self.iter_with_no_improv_since_wi = 0
@@ -239,6 +251,11 @@ class BaseNLPMetaAgent(BaseAgent):
                                                             self.config.dataset.train.n_shots -
                                                             self.config.dataset.train.decay_by)
                     self.train_dataset.update_n_shots(self.config.dataset.train.n_shots)
+
+            # Start PDO on a patience-based system
+            if self.pdo_method:
+                if self.iter_with_no_improv > self.config.dataset.train.pdo_patience:
+                    self.train_datset.update_sampling(True)
 
 
     def save_metrics(self):
@@ -308,6 +325,23 @@ class BaseNLPMetaAgent(BaseAgent):
 
 class NLPPrototypeNetAgent(BaseNLPMetaAgent):
 
+    def update_sampling_matrix(self, logprobas, targets, nway, nquery):
+        """Updates the probabilities of """
+
+        for way_num in range(nway):
+            for query_num in range(nquery):
+                idx = way_num * nquery + query_num
+                target = targets[0][idx]
+                print(self.current_categories)
+                generating_category = self.current_categories[target]
+                ema_alpha = 1 / (1 + self.current_epoch)
+                for predicted in set(targets[0]):
+                    if predicted != target:
+                        mispred_prob = torch.exp(logprobas[0][idx][predicted])
+                        predicted_category = self.current_categories[predicted]
+                        self.difficulty_matrix[generating_category][target_category] = (1 - ema_alpha) * self.difficulty_matrix[generating_category][target_category] + ema_alpha * mispred_prob
+        self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
+
     def compute_loss(self, support_features, support_targets, query_features, query_targets):
         batch_size, nway, nquery, dim = query_features.size()
         prototypes = torch.mean(support_features, dim=2)
@@ -318,6 +352,11 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
 
         loss = -logprobas.gather(3, query_targets.unsqueeze(3)).squeeze()
         loss = loss.view(-1).mean()
+
+        if self.pdo_method:
+            self.update_sampling_matrix(logprobas.view(batch_size, nway*nquery, -1),
+                                        query_targets.view(batch_size, nway*nquery),
+                                        nway, nquery)
 
         acc = utils.get_accuracy(logprobas.view(batch_size, nway*nquery, -1),
                                  query_targets.view(batch_size, nway*nquery))
@@ -340,6 +379,8 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         query_lens = batch['query_lens'].to(self.device)
         query_masks = batch['query_masks'].to(self.device)
         query_labs = batch['query_labs'].to(self.device)
+        categories = batch['categories'].to(self.device)
+        self.current_categories = categories
 
         batch_size = support_toks.size(0)
         n_ways = support_toks.size(1)
