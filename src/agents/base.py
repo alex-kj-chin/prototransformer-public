@@ -19,7 +19,6 @@ class BaseAgent(object):
         self.dropout = self.config.model.hidden_dropout_prob if isinstance(self.config.model.hidden_dropout_prob, float) else None
         self.pdo_method = self.config.dataset.train.pdo_method if isinstance(self.config.dataset.train.pdo_method, str) else None
 
-        # PDO implementation
         if self.pdo_method == "downsample":
             def sampling_method(difficulty_matrix, categories):
                 miss_prob = 0

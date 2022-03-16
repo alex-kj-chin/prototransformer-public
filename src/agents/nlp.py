@@ -106,7 +106,7 @@ class BaseNLPMetaAgent(BaseAgent):
 
         # For PDO
         self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
-        self.difficulty_matrix = np.ones((len(self.train_dataset.classes), len(self.train_dataset.classes))) * 0.5
+        self.difficulty_matrix = np.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5
         self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
     def _load_loaders(self):
@@ -322,8 +322,8 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
             for query_num in range(nquery):
                 idx = way_num * nquery + query_num
                 target = targets[0][idx]
-                print(self.current_categories)
                 generating_category = self.current_categories[target]
+                print(generating_category)
                 ema_alpha = 1 / (1 + self.current_epoch)
                 for predicted in set(targets[0]):
                     if predicted != target:
