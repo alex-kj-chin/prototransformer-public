@@ -240,7 +240,7 @@ class BaseNLPMetaAgent(BaseAgent):
             # Start PDO on a patience-based system
             if self.pdo_method:
                 if self.iter_with_no_improv > self.config.dataset.train.pdo_patience:
-                    self.train_datset.update_sampling(True)
+                    self.train_dataset.update_sampling(True)
 
 
     def save_metrics(self):
