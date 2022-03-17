@@ -22,9 +22,10 @@ class BaseAgent(object):
         if self.pdo_method == "downsample":
             def sampling_method(difficulty_matrix, categories):
                 # print(difficulty_matrix, categories)
-                print(type(difficulty_matrix))
-                print(type(categories.get_device))
+                # print(type(difficulty_matrix))
+                # print(type(categories.get_device))
                 print("starting sampling")
+                categories = torch.tensor(categories).to_device(self.device)
                 miss_prob = 0
                 for first_category in categories:
                     single_miss_prob = 0
