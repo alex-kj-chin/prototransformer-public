@@ -21,10 +21,6 @@ class BaseAgent(object):
 
         if self.pdo_method == "downsample":
             def sampling_method(difficulty_matrix, categories):
-                # print(difficulty_matrix, categories)
-                # print(type(difficulty_matrix))
-                # print(type(categories.get_device))
-                print("starting sampling")
                 miss_prob = 0
                 for first_category in categories:
                     single_miss_prob = 0
@@ -32,7 +28,6 @@ class BaseAgent(object):
                         if first_category != second_category:
                             single_miss_prob += (1 - single_miss_prob) * difficulty_matrix[first_category - 1][second_category - 1]
                     miss_prob += single_miss_prob
-                print("ending sampling")
                 return np.random.uniform() < (miss_prob / len(categories))
 
             self.sampling_method = sampling_method

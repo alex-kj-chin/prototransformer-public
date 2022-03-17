@@ -104,9 +104,6 @@ class BaseNLPMetaAgent(BaseAgent):
         else:
             raise Exception(f'Dataset {self.config.dataset.name} not supported.')
 
-        # For PDO
-        self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
-
     def _load_loaders(self):
         self.train_loader, self.train_len = self._create_dataloader(
             self.train_dataset,
