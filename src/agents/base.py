@@ -25,7 +25,7 @@ class BaseAgent(object):
                 # print(type(difficulty_matrix))
                 # print(type(categories.get_device))
                 print("starting sampling")
-                categories = torch.tensor(categories).to_device(self.device)
+                categories = torch.tensor(categories).to(self.device)
                 miss_prob = 0
                 for first_category in categories:
                     single_miss_prob = 0
