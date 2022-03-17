@@ -6,6 +6,7 @@ from itertools import chain
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import time
 from transformers import (
     RobertaConfig,
     RobertaModel,
@@ -106,7 +107,7 @@ class BaseNLPMetaAgent(BaseAgent):
 
         # For PDO
         # self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
-        self.difficulty_matrix = np.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5
+        self.difficulty_matrix = torch.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5
         self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
     def _load_loaders(self):
@@ -316,18 +317,38 @@ class BaseNLPMetaAgent(BaseAgent):
 class NLPPrototypeNetAgent(BaseNLPMetaAgent):
 
     def update_sampling_matrix(self, logprobas, targets, nway, nquery):
-        """Updates the probabilities of """
+        """Updates the the difficulty matrix"""
+        start = time.time()
 
-        for idx in range(nway * nquery):
-            target = targets[0][idx]
-            generating_category = self.current_categories[0][target]
-            ema_alpha = 1 / (1 + self.current_epoch)
-            for predicted in set(targets[0]):
-                if predicted != target:
-                    mispred_prob = torch.exp(logprobas[0][idx][predicted])
-                    predicted_category = self.current_categories[0][predicted]
-                    self.difficulty_matrix[generating_category - 1][predicted_category - 1] = (1 - ema_alpha) * self.difficulty_matrix[generating_category - 1][predicted_category - 1] + ema_alpha * mispred_prob
-        self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
+        # No For loops
+        probas = torch.exp(logprobas)
+        probas_reshaped = probas.reshape([nway, nquery, nway])
+        avg_probas = torch.sum(probas_reshaped, axis=1) / 3
+
+        # EMA with 1 / t + 1 as alpha (from lit)
+        ema_alpha = 1 / (1 + self.current_epoch)
+
+        # Create projection matrices, project difficulty_matrix down, and then calculate
+        # intermediary values so that the last operation can just be adding
+        category_indices = targets[:,::nquery]
+        indices = torch.vstack((category_indices, self.current_categories - 1))
+        values = torch.ones(nway)
+        num_categories = self.difficulty_matrix.shape[0]
+        post_project = torch.sparse_coo_tensor(indices, values, (nway, num_categories)).to_dense()
+        pre_project = torch.sparse_coo_tensor(torch.flip(indices, [0]), values, (num_categories, nway)).to_dense()
+
+        # Project difficulty matrix down and calculate intermediate_update_val
+        projected_difficulty_matrix = torch.matmul(torch.matmul(post_project, self.difficulty_matrix), pre_project)
+        intermediate_update_val = ema_alpha * avg_probas - ema_alpha * projected_difficulty_matrix
+
+        # Now project back up to the higher space
+        intermediate_update_val = torch.matmul(torch.matmul(pre_project, intermediate_update_val), post_project)
+
+        # Now simple addition!
+        self.difficulty_matrix += intermediate_update_val
+
+        # NOTE: ADD SELF TO current_categories and difficulty_matrix
+        print(f"ending update_sampling_matrix: {time.time() - start}")
 
     def compute_loss(self, support_features, support_targets, query_features, query_targets):
         batch_size, nway, nquery, dim = query_features.size()
@@ -449,6 +470,9 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
                 tqdm_batch.update()
         if not self.config.fasrc:
             tqdm_batch.close()
+
+        # for PDO
+        self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
         self.current_loss = loss_meter.avg
         self.train_loss.append(loss_meter.avg)
