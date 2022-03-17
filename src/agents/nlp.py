@@ -340,7 +340,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         # Now simple addition!
         self.difficulty_matrix += intermediate_update_val
 
-    def compute_loss(self, support_features, support_targets, query_features, query_targets):
+    def compute_loss(self, support_features, support_targets, query_features, query_targets, test=False):
         batch_size, nway, nquery, dim = query_features.size()
         prototypes = torch.mean(support_features, dim=2)
         query_features_flat = query_features.view(batch_size, nway * nquery, dim)
@@ -351,7 +351,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         loss = -logprobas.gather(3, query_targets.unsqueeze(3)).squeeze()
         loss = loss.view(-1).mean()
 
-        if self.pdo_method:
+        if self.pdo_method and not test:
             self.update_sampling_matrix(logprobas.view(batch_size, nway*nquery, -1),
                                         query_targets.view(batch_size, nway*nquery),
                                         nway, nquery)
@@ -368,7 +368,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         masked_outputs = torch.sum(masked_outputs, dim=1) / partition
         return masked_outputs
 
-    def forward(self, batch, n_shots, n_queries):
+    def forward(self, batch, n_shots, n_queries, test=False):
         support_toks = batch['support_toks'].to(self.device)
         support_lens = batch['support_lens'].to(self.device)
         support_masks = batch['support_masks'].to(self.device)
@@ -422,6 +422,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
             support_labs.view(batch_size, n_ways, n_shots),
             query_features.view(batch_size, n_ways, n_queries, -1),
             query_labs.view(batch_size, n_ways, n_queries),
+            test,
         )
         return loss, top1, logprobas
 
@@ -490,7 +491,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
                 if self.shot_mode == "step_decay":
                     n_shots = self.config.dataset.test.n_shots
                 n_queries = self.config.dataset.test.n_queries
-                loss, acc, _ = self.forward(batch, n_shots, n_queries)
+                loss, acc, _ = self.forward(batch, n_shots, n_queries, test=True)
                 task_type = batch['task_type'].cpu().numpy()
 
                 loss_meter.update(loss.item())
