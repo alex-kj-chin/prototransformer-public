@@ -97,6 +97,10 @@ class BaseFewShotTextDataset(Dataset):
             classes = val_classes
         elif self.split == 'test':
             classes = test_classes
+        elif self.split == "exp_train":
+            classes = train_classes
+        elif self.split == "exp_val":
+            classes = val_classes
         else:
             raise Exception(f'split {self.split} not supported.')
 
@@ -244,6 +248,10 @@ class BaseFewShotTextDataset(Dataset):
             return 100
         elif self.split == 'test':
             return 1000
+        elif self.split == "exp_train":
+            return 20
+        elif self.split == "exp_val":
+            return 20
         else:
             raise Exception(f'Split {self.split} not supported.')
 
