@@ -14,7 +14,7 @@ class BaseAgent(object):
         self.logger = logging.getLogger("Agent")
 
         # We're gonna log everything in the same place
-        log_dir = "/".join(config.log_dir.split("/")[:-4] + ["performance"])
+        log_dir = "/".join(config.log_dir.split("/")[:-5] + ["performance"])
         self.log_path = os.path.join(log_dir, f"{self.config.exp_name}_log.txt")
 
         # Don't want user to always have to provide these arguments
