@@ -21,7 +21,8 @@ class BaseAgent(object):
 
         if self.pdo_method == "downsample":
             def sampling_method(difficulty_matrix, categories):
-                print(difficulty_matrix, categories)
+                # print(difficulty_matrix, categories)
+                print(difficulty_matrix.to_device(), categories.to_device())
                 print("starting sampling")
                 miss_prob = 0
                 for first_category in categories:
