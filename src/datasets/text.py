@@ -82,7 +82,7 @@ class BaseFewShotTextDataset(Dataset):
         print("UPDATED WAYS: ", self.n_ways)
 
     def set_difficulty_matrix(self, difficulty_matrix):
-        self.difficulty_matrix = difficulty_matrix
+        self.difficulty_matrix = difficulty_matrix.cpu().numpy()
         print(f"UPDATED DIFFICULTY MATRIX")
 
     def make_classes(self):
@@ -188,7 +188,7 @@ class BaseFewShotTextDataset(Dataset):
         if self.sampling:
             for _ in range(10): # Don't get stuck in an infinite loop--if drawing 10 samples, it's likely that the algorithm works super well already
                 categories = self.rs.choice(self.classes, size=self.n_ways, replace=False)
-                if self.sampling_method(self.difficulty_matrix, torch.tensor(categories).to(self.device)):
+                if self.sampling_method(self.difficulty_matrix, categories):
                     break
                 else:
                     print("REJECTED")
