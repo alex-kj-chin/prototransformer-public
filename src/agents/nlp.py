@@ -324,7 +324,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         # Create projection matrices, project difficulty_matrix down, and then calculate
         # intermediary values so that the last operation can just be adding
         category_indices = targets[:,::nquery]
-        indices = torch.vstack((category_indices, self.current_categories - 1))
+        indices = torch.vstack((category_indices, self.current_categories))
         values = torch.ones(nway).to(self.device)
         num_categories = self.difficulty_matrix.shape[0]
         post_project = torch.sparse_coo_tensor(indices, values, (nway, num_categories)).to_dense()

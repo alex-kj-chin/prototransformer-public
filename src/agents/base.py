@@ -26,7 +26,7 @@ class BaseAgent(object):
                     single_miss_prob = 0
                     for second_category in categories:
                         if first_category != second_category:
-                            single_miss_prob += (1 - single_miss_prob) * difficulty_matrix[first_category - 1][second_category - 1]
+                            single_miss_prob += (1 - single_miss_prob) * difficulty_matrix[first_category][second_category]
                     miss_prob += single_miss_prob
                 return np.random.uniform() < (miss_prob / len(categories))
 
@@ -60,7 +60,7 @@ class BaseAgent(object):
         self.iter_with_no_improv_since_sd = 0
 
         # For PDO
-        self.difficulty_matrix = (torch.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5).to(self.device)
+        self.difficulty_matrix = (torch.ones((max(self.train_dataset.classes) + 1, max(self.train_dataset.classes) + 1)) * 0.5).to(self.device)
         self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
     def _set_seed(self):
