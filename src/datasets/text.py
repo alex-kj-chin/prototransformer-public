@@ -82,7 +82,7 @@ class BaseFewShotTextDataset(Dataset):
         print("UPDATED WAYS: ", self.n_ways)
 
     def set_difficulty_matrix(self, difficulty_matrix):
-        self.difficulty_matrix = difficulty_matrix
+        self.difficulty_matrix = difficulty_matrix.cpu().numpy()
         print(f"UPDATED DIFFICULTY MATRIX")
 
     def make_classes(self):
