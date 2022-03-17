@@ -61,6 +61,10 @@ class BaseAgent(object):
         self.best_val_metric_since_sd = 0
         self.iter_with_no_improv_since_sd = 0
 
+        # For PDO
+        self.difficulty_matrix = (torch.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5).to(self.device)
+        self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
+
     def _set_seed(self):
         torch.manual_seed(self.config.seed)
         np.random.seed(self.config.seed)
