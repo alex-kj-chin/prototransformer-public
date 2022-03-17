@@ -89,7 +89,7 @@ class BaseNLPMetaAgent(BaseAgent):
                 n_ways=self.config.dataset.train.n_ways,
                 n_shots=self.config.dataset.train.n_shots,
                 n_queries=self.config.dataset.train.n_queries,
-                split='train',
+                split=self.config.dataset.split_prefix + 'train',
                 sampling_method=self.sampling_method,
             )
             # validation (test is not used here)
@@ -98,7 +98,7 @@ class BaseNLPMetaAgent(BaseAgent):
                 n_ways=self.config.dataset.test.n_ways,
                 n_shots=self.config.dataset.test.n_shots,
                 n_queries=self.config.dataset.test.n_queries,
-                split='val',
+                split=self.config.dataset.split_prefix + 'val',
                 sampling_method=self.sampling_method,
             )
         else:

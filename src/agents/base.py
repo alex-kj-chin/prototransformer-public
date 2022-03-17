@@ -12,7 +12,11 @@ class BaseAgent(object):
     def __init__(self, config):
         self.config = config
         self.logger = logging.getLogger("Agent")
-        self.log_path = os.path.join(config.log_dir, "log.txt")
+
+        # We're gonna log everything in the same place
+        log_dir = "/".join(config.log_dir.split("/")[:-5] + ["performance"])
+        self.log_path = os.path.join(log_dir, f"{self.config.exp_name}_log.txt")
+
         # Don't want user to always have to provide these arguments
         self.shot_mode = self.config.dataset.train.shot_mode if isinstance(self.config.dataset.train.shot_mode, str) else None
         self.wi_mode = self.config.dataset.train.ways_mode if isinstance(self.config.dataset.train.ways_mode, str) else None
