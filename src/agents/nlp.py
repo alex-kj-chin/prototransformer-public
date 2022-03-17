@@ -107,7 +107,7 @@ class BaseNLPMetaAgent(BaseAgent):
 
         # For PDO
         # self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
-        self.difficulty_matrix = torch.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5
+        self.difficulty_matrix = (torch.ones((max(self.train_dataset.classes), max(self.train_dataset.classes))) * 0.5).to(self.device)
         self.train_dataset.set_difficulty_matrix(self.difficulty_matrix)
 
     def _load_loaders(self):
@@ -332,7 +332,7 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         # intermediary values so that the last operation can just be adding
         category_indices = targets[:,::nquery]
         indices = torch.vstack((category_indices, self.current_categories - 1))
-        values = torch.ones(nway)
+        values = torch.ones(nway).to(self.device)
         num_categories = self.difficulty_matrix.shape[0]
         post_project = torch.sparse_coo_tensor(indices, values, (nway, num_categories)).to_dense()
         pre_project = torch.sparse_coo_tensor(torch.flip(indices, [0]), values, (num_categories, nway)).to_dense()
