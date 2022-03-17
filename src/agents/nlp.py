@@ -6,7 +6,6 @@ from itertools import chain
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import time
 from transformers import (
     RobertaConfig,
     RobertaModel,
@@ -106,7 +105,7 @@ class BaseNLPMetaAgent(BaseAgent):
             raise Exception(f'Dataset {self.config.dataset.name} not supported.')
 
         # For PDO
-        # self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
+        self.train_dataset.update_sampling(True) # DELETE THIS IT'S JUST FOR TESTING
 
     def _load_loaders(self):
         self.train_loader, self.train_len = self._create_dataloader(
@@ -316,7 +315,6 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
 
     def update_sampling_matrix(self, logprobas, targets, nway, nquery):
         """Updates the the difficulty matrix"""
-        start = time.time()
 
         # No For loops
         probas = torch.exp(logprobas)
@@ -344,9 +342,6 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
 
         # Now simple addition!
         self.difficulty_matrix += intermediate_update_val
-
-        # NOTE: ADD SELF TO current_categories and difficulty_matrix
-        print(f"ending update_sampling_matrix: {time.time() - start}")
 
     def compute_loss(self, support_features, support_targets, query_features, query_targets):
         batch_size, nway, nquery, dim = query_features.size()
