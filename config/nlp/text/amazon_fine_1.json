@@ -15,7 +15,7 @@
             "n_queries": 3,
             "smlmt_tasks_factor": 0,
             "shot_mode": "patience",
-            "sd_patience": 0,
+            "sd_patience": 6,
             "min_shots": 3,
             "decay_by": 3
         },
