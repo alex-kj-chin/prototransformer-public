@@ -77,8 +77,11 @@ class BaseAgent(object):
         # if self.is_cuda and not self.config.cuda:
         #     self.logger.info("WARNING: You have a CUDA device, so you should probably enable CUDA")
 
+        print("self.config.cuda is: ", self.config.cuda)
         self.cuda = self.is_cuda & self.config.cuda
         self.manual_seed = self.config.seed
+        print("self.cuda is: ", self.cuda)
+        print("self.is_cuda is: ", self.is_cuda)
         if self.cuda: torch.cuda.manual_seed(self.manual_seed)
 
         if self.cuda:
