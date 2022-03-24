@@ -13,6 +13,10 @@ def evaluate(args, gpu_device=-1):
     checkpoint_dir = os.path.join(args.exp_dir, 'checkpoints')
     analysis_dir = os.path.join(args.exp_dir, 'analysis')
 
+    # Allow user to override query num
+    if args.query_size is not None:
+        config.dataset.test.n_queries = args.query_size
+
     if not os.path.isdir(analysis_dir):
         os.makedirs(analysis_dir)
 
@@ -69,5 +73,6 @@ if __name__ == "__main__":
     parser.add_argument('exp_dir', type=str, help='path to experiment directory')
     parser.add_argument('checkpoint_file', type=str, help='name of checkpoint')
     parser.add_argument('--gpu-device', type=int, default=-1)
+    parser.add_argument('--query-size', type=int, default=0)
     args = parser.parse_args()
     evaluate(args, gpu_device=args.gpu_device)
