@@ -13,14 +13,14 @@ def evaluate(args, gpu_device=-1):
     checkpoint_dir = os.path.join(args.exp_dir, 'checkpoints')
     analysis_dir = os.path.join(args.exp_dir, 'analysis')
 
-    # Allow user to override query num
-    if args.query_size is not None:
-        config.dataset.test.n_queries = args.query_size
-
     if not os.path.isdir(analysis_dir):
         os.makedirs(analysis_dir)
 
     config = process_config(config_path)
+
+    # Allow user to override query num
+    if args.query_size is not None:
+        config.dataset.test.n_queries = args.query_size
 
     if gpu_device >= 0: config.gpu_device = gpu_device
     config = process_config_from_json(config)
