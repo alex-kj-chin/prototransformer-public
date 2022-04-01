@@ -247,7 +247,7 @@ class BaseFewShotTextDataset(Dataset):
         elif self.split == 'val':
             return 100
         elif self.split == 'test':
-            return 1000
+            return 100 # Was 1000
         elif self.split == "exp_train":
             return 20
         elif self.split == "exp_val":

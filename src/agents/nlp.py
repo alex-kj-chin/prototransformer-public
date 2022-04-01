@@ -484,8 +484,8 @@ class NLPPrototypeNetAgent(BaseNLPMetaAgent):
         acc_stores = [[] for _ in all_task_types]
         if verbose:
             accuracies = [[] for _ in all_task_types]
-
         with torch.no_grad():
+
             for batch in loader:
                 n_shots = self.config.dataset.test.n_shots
                 n_queries = self.config.dataset.test.n_queries
